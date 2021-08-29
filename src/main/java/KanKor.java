@@ -227,7 +227,6 @@ public class KanKor extends TelegramLongPollingBot {
 
     @Override
     public String getBotToken() {
-        return "1131302484:AAHnjaG6bQCXWI_3djLLNZfcJjyQLo12Ef4";
-//        return "637482033:AAEvKX3uQX6pEXmv8FAcoiuejogA0IVdZRc";
+        return "YOUR_BOT_TOKEN";
     }
 }
