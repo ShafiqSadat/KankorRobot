@@ -2,7 +2,8 @@
 Afghanistan Kankor Results Telegram Robot
 
 # Prerequisites
-[java (JDK)](https://www.java.com/en/download)
+[Java (JDK)](https://www.java.com/en/download)
+[Redis Server](https://redis.io/)
 
 # Redis server 
 Redis is an in-memory data structure store, used as a distributed, in-memory key–value database, cache and message broker, with optional durability. Redis supports different kinds of abstract data structures, such as strings, lists, maps, sets, sorted sets, HyperLogLogs, bitmaps, streams, and spatial indices.
