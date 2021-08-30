@@ -2,7 +2,7 @@
 Afghanistan Kankor Results Telegram Robot
 
 # Prerequisites
-[Java (JDK)](https://www.java.com/en/download)
+[Java (JDK)](https://www.java.com/en/download),
 [Redis Server](https://redis.io/)
 
 # Redis server 
