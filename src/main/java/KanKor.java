@@ -32,16 +32,29 @@ public class KanKor extends TelegramLongPollingBot {
                     redis.sadd("KanKorMembers",String.valueOf(userID));
                 }
                 String text = String.format("سلام %s عزیز به ربات نتایج کانکور خوش آمدید!\nبرای دریافت نتیجه ی کانکور تان روی دکمه دریافت نتیجه کلیک نمائید.",name);
-                SendMessage sendMessage = new SendMessage()
-                        .setText(text)
-                        .setChatId(userID)
-                        .setReplyToMessageId(messageID)
-                        .setReplyMarkup(sendKeyBoard());
+
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(userID);
+                sendMessage.setText(text);
+                sendMessage.setReplyMarkup(sendKeyBoard());
+                sendMessage.setReplyToMessageId(messageID);
                 try {
                     execute(sendMessage);
                 } catch (TelegramApiException e) {
                     e.printStackTrace();
                 }
+
+                //deprecated method
+//                SendMessage sendMessage = new SendMessage()
+//                        .setText(text)
+//                        .setChatId(String.valueOf(userID))
+//                        .setReplyToMessageId(messageID)
+//                        .setReplyMarkup(sendKeyBoard());
+//                try {
+//                    execute(sendMessage);
+//                } catch (TelegramApiException e) {
+//                    e.printStackTrace();
+//                }
             }
             else if (messageText.equals("ارسال همگانی") && userID == 113566842){
                 redis.set("waitForSendAll"+userID,"true");
@@ -119,16 +132,29 @@ public class KanKor extends TelegramLongPollingBot {
     }
 
     public void sendMessage(long userID , String messageText,int messageID,ReplyKeyboardMarkup replyKeyboardMarkup){
-        SendMessage sendMessage = new SendMessage()
-                .setChatId(userID)
-                .setReplyMarkup(replyKeyboardMarkup)
-                .setText(messageText)
-                .setReplyToMessageId(messageID);
+
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setReplyToMessageId(messageID);
+        sendMessage.setChatId(userID);
+        sendMessage.setText(messageText);
+        sendMessage.setReplyMarkup(replyKeyboardMarkup);
         try {
             execute(sendMessage);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
+
+        //deprecated method
+//        SendMessage sendMessage = new SendMessage()
+//                .setChatId(userID)
+//                .setReplyMarkup(replyKeyboardMarkup)
+//                .setText(messageText)
+//                .setReplyToMessageId(messageID);
+//        try {
+//            execute(sendMessage);
+//        } catch (TelegramApiException e) {
+//            e.printStackTrace();
+//        }
     }
     String getResults(String id){
         Document doc;
@@ -222,11 +248,11 @@ public class KanKor extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        return null;
+        return "KankorRobot";
     }
 
     @Override
     public String getBotToken() {
-        return "YOUR_BOT_TOKEN";
+        return "1131302484:AAHnjaG6bQCXWI_3djLLNZfcJjyQLo12Ef4";
     }
 }
