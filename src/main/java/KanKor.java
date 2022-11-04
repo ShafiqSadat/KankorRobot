@@ -195,13 +195,13 @@ public class KanKor extends TelegramLongPollingBot {
         return "خطا!\nبه دلیل حجم زیاد درخواست ها ربات فعلا قادر به پاسخگویی نیست، لطفا چند دقیقه بعد مجدد تلاش نمائید...";
     }
 
-    String getResultForId(String name,String faterName,String grangFatherName){
+    String getResultForId(String name,String fatherName,String grandFatherName){
         Document doc;
         try {
             doc = Jsoup.connect("https://nexa.gov.af/search_id.php")
                     .data("nexa_search_name", name)
-                    .data("nexa_search_fname", faterName)
-                    .data("nexa_search_gname", grangFatherName)
+                    .data("nexa_search_fname", fatherName)
+                    .data("nexa_search_gname", grandFatherName)
                     .userAgent("Mozilla")
                     .post();
 //            if (doc.body().text().contains("آی دی نمبر وارد شده اشتباه میباشد!")){
@@ -253,6 +253,6 @@ public class KanKor extends TelegramLongPollingBot {
 
     @Override
     public String getBotToken() {
-        return "YOUR_BOT_TOKEN";
+        return "1131302484:AAHnjaG6bQCXWI_3djLLNZfcJjyQLo12Ef4";
     }
 }
