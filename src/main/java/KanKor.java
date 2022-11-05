@@ -1,3 +1,11 @@
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -100,11 +108,11 @@ public class KanKor extends TelegramLongPollingBot {
                 redis.del("waitForGrandFatherNameForId"+userID);
             }
             else if (messageText.equals("دریافت نتیجه \uD83D\uDCDC")){
-                boolean not = true;
-                if (not){
-                    sendMessage(userID,"کاربر عزیز نتایج به زودی آپلود میشود لطفا صبور باشید.",messageID,null);
-                    return;
-                }
+//                boolean not = true;
+//                if (not){
+//                    sendMessage(userID,"کاربر عزیز نتایج به زودی آپلود میشود لطفا صبور باشید.",messageID,null);
+//                    return;
+//                }
                 redis.set("KanKorWaitForID"+userID,"true");
                 sendMessage(userID,"لطفا آیدی کانکور تان را برای دریافت نتیجه ارسال نمائید!",messageID,sendKeyBoard());
             }
@@ -118,6 +126,10 @@ public class KanKor extends TelegramLongPollingBot {
             }
             else if (update.getMessage().hasText()){
 //                String kanKorID = messageText;
+//                boolean not = true;
+//                if (not){
+//                    return;
+//                }
                 Thread thread = new Thread(() -> {
                     sendMessage(userID,"درحال جستجوی نتیجه لطفا منتظر بمانید...",messageID,sendKeyBoard());
                     String result = getResults(toEnglish(messageText));
@@ -159,34 +171,75 @@ public class KanKor extends TelegramLongPollingBot {
     String getResults(String id){
         Document doc;
         try {
-            Connection.Response res = Jsoup
-                    .connect("https://results.nexa.gov.af/fa/kankor1400")
-                    .method(Connection.Method.GET)
-                    .execute();
-            Map<String, String> cookies = res.cookies();
-//            System.out.println(res.body());
-            var token = Jsoup.parse(res.body());
-            doc = Jsoup.connect("https://results.nexa.gov.af/fa/kankor1400")
-                    .data("search", id)
-                    .data("_token",token.getElementsByTag("input").get(0).val())
-                    .data("search_btn","")
-                    .cookies(cookies)
-                    .userAgent("Mozilla")
-                    .post();
-//            System.out.println(doc.getElementsByTag("tbody").get(0).getElementsByTag("li").get(0).text());
-            if (doc.body().text().contains("!هیچ نتیجه یی با این آی دی نمبر موجود نمی باشد")){
-                return "هیچ نتیجه یی با این آی دی نمبر موجود نمی باشد! \n  په دې مشخصاتو هیڅ پايله ونه موندل شوه";
+//            Connection.Response res = Jsoup
+//                    .connect("https://nexaresults.org/update.php")
+//                    .method(Connection.Method.POST)
+//                    .requestBody("input="+id)
+//                    .execute();
+////            Map<String, String> cookies = res.cookies();
+//            System.out.println(Jsoup.parse(res.body()));
+////            var token = Jsoup.parse(res.body());
+
+
+            //Ugly but it works
+            HttpClient client= new DefaultHttpClient();
+            HttpPost request = new HttpPost("https://nexaresults.org/update.php");
+
+            List<NameValuePair> pairs = new ArrayList<NameValuePair>();
+            pairs.add(new BasicNameValuePair("input", id));
+
+            request.setEntity(new UrlEncodedFormEntity(pairs ));
+            HttpResponse resp = client.execute(request);
+
+            String responseString = new BasicResponseHandler().handleResponse(resp);
+
+            String start = "<!DOCTYPE html>\n" +
+                    "<html>\n" +
+                    "<style>\n" +
+                    "table, th, td {\n" +
+                    "  border:1px solid black;\n" +
+                    "}\n" +
+                    "</style>\n" +
+                    "<body>\n" +
+                    "\n" +
+                    "<h2>A basic HTML table</h2>\n" +
+                    "\n" +
+                    "<table style=\"width:100%\">";
+            String current = responseString;
+            String end = "</table>\n" +
+                    "\n" +
+                    "<p>To understand the example better, we have added borders to the table.</p>\n" +
+                    "\n" +
+                    "</body>\n" +
+                    "</html>";
+            doc = Jsoup.parse(start+current+end);
+
+//            System.out.println("RESPP: "+doc);
+
+//            doc = Jsoup.connect("https://nexaresults.org/update.php")
+//                    .requestBody("input="+id)
+////                    .data("input", id)
+////                    .data("_token",token.getElementsByTag("input").get(0).val())
+////                    .data("search_btn","")
+////                    .cookies(cookies)
+//                    .userAgent("Mozilla")
+//                    .post();
+////            System.out.println(doc.getElementsByTag("tbody").get(0).getElementsByTag("li").get(0).text());
+            if (doc.body().text().contains("آی دی نمبر وارد شده اشتباه میباشد!")){
+                return "آی دی نمبر وارد شده اشتباه میباشد! \n  په دې مشخصاتو هیڅ پايله ونه موندل شوه";
             }
+
+//            System.out.println("RESP : "+doc.toString());
             KankorResponseModel responseModel = new KankorResponseModel();
-            responseModel.setKankorId(doc.getElementsByTag("tbody").get(0).getElementsByTag("li").get(0).text());
-            responseModel.setName(doc.getElementsByTag("tbody").get(0).getElementsByTag("li").get(1).text());
-            responseModel.setFatherName(doc.getElementsByTag("tbody").get(0).getElementsByTag("li").get(2).text());
-            responseModel.setGrandFatherName(doc.getElementsByTag("tbody").get(0).getElementsByTag("li").get(3).text());
-            responseModel.setSchool(doc.getElementsByTag("tbody").get(0).getElementsByTag("li").get(4).text());
-            responseModel.setPoint(doc.getElementsByTag("tbody").get(0).getElementsByTag("li").get(5).text());
-            responseModel.setResult(doc.getElementsByTag("tbody").get(0).getElementsByTag("li").get(6).text());
-            responseModel.setCity(doc.getElementsByTag("tbody").get(0).getElementsByTag("li").get(7).text());
-            responseModel.setSex(doc.getElementsByTag("tbody").get(0).getElementsByTag("li").get(8).text());
+            responseModel.setKankorId(doc.getElementsByTag("tbody").get(0).getElementsByTag("td").get(0).text());
+            responseModel.setName(doc.getElementsByTag("tbody").get(0).getElementsByTag("td").get(1).text());
+            responseModel.setFatherName(doc.getElementsByTag("tbody").get(0).getElementsByTag("td").get(2).text());
+            responseModel.setGrandFatherName(doc.getElementsByTag("tbody").get(0).getElementsByTag("td").get(3).text());
+            responseModel.setSchool(doc.getElementsByTag("tbody").get(0).getElementsByTag("td").get(7).text());
+            responseModel.setPoint(doc.getElementsByTag("tbody").get(0).getElementsByTag("td").get(8).text());
+            responseModel.setResult(doc.getElementsByTag("tbody").get(0).getElementsByTag("td").get(9).text());
+            responseModel.setCity(doc.getElementsByTag("tbody").get(0).getElementsByTag("td").get(6).text());
+            responseModel.setSex(doc.getElementsByTag("tbody").get(0).getElementsByTag("td").get(4).text());
             //            System.out.println(result);
             return String.format("آیدی کانکور : %s\nاسم : %s\nاسم پدر : %s\nاسم پدرکلان : %s\nلیسه : %s\nنمره : %s\nنتیجه : %s\nولایت : %s\nجنسیت : %s",responseModel.getKankorId(),responseModel.getName(),responseModel.getFatherName(),responseModel.getGrandFatherName(),responseModel.getSchool(),responseModel.getPoint(),responseModel.getResult(),responseModel.getCity(),responseModel.getSex());
         } catch (IOException e) {
@@ -253,6 +306,6 @@ public class KanKor extends TelegramLongPollingBot {
 
     @Override
     public String getBotToken() {
-        return "1131302484:AAHnjaG6bQCXWI_3djLLNZfcJjyQLo12Ef4";
+        return "1131302484:AAGxMt97mZzOjbzIiaYIO71PfaYz0mRZULE";
     }
 }
