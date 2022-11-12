@@ -80,11 +80,11 @@ public class KanKor extends TelegramLongPollingBot {
                 sendMessage(userID," به "+users.size()+" کاربر درحال ارسال است...",0,null);
             }
             else if (messageText.equals("یافتن ایدی \uD83C\uDD94")){
-                var not = true;
-                if (not){
-                    sendMessage(userID,"این بخش موقتأ غیر فعال شده است!",messageID,sendKeyBoard());
-                    return;
-                }
+//                var not = true;
+//                if (not){
+//                    sendMessage(userID,"این بخش موقتأ غیر فعال شده است!",messageID,sendKeyBoard());
+//                    return;
+//                }
                 redis.set("waitForNameForId"+userID,"true");
                 sendMessage(userID,"نام تان را ارسال نمائید:\nتوجه داشته باشید که نام تان دقیقا مشابه کارت امتحان تان باشد.",0,sendKeyBoard());
             }
@@ -103,7 +103,7 @@ public class KanKor extends TelegramLongPollingBot {
             else if (update.getMessage().hasText() && redis.get("waitForGrandFatherNameForId"+userID)!=null){
                 var nameForID = redis.get("userNameForId"+userID);
                 var fatherNameForID = redis.get("userFatherNameForId"+userID);
-                    var result = getResultForId(nameForID,fatherNameForID, messageText);
+                    var result = getResultsFromDatabase(nameForID,fatherNameForID, messageText);
                     sendMessage(userID,result,messageID,sendKeyBoard());
                 redis.del("waitForGrandFatherNameForId"+userID);
             }
@@ -247,6 +247,31 @@ public class KanKor extends TelegramLongPollingBot {
         }
         return "خطا!\nبه دلیل حجم زیاد درخواست ها ربات فعلا قادر به پاسخگویی نیست، لطفا چند دقیقه بعد مجدد تلاش نمائید...";
     }
+
+
+
+    String getResultsFromDatabase(String name, String fatherName, String grandFatherName){
+//            System.out.println("RESP : "+doc.toString());
+            List<ResultsModel> resultsModels = KankorDB.getResultsFromDataBase(name,fatherName,grandFatherName);
+            if (resultsModels.size() != 0){
+                var result = resultsModels.get(0);
+                KankorResponseModel responseModel = new KankorResponseModel();
+                responseModel.setKankorId(result.getKankorID());
+                responseModel.setName(result.getName());
+                responseModel.setFatherName(result.getFatherName());
+                responseModel.setGrandFatherName(result.getGrandFatherName());
+                responseModel.setSchool(result.getSchool());
+                responseModel.setPoint(result.getPoints());
+                responseModel.setResult(result.getResult());
+                responseModel.setCity(result.getProvince());
+                responseModel.setSex(result.getSex());
+                //            System.out.println(result);
+                return String.format("آیدی کانکور : %s\nاسم : %s\nاسم پدر : %s\nاسم پدرکلان : %s\nلیسه : %s\nنمره : %s\nنتیجه : %s\nولایت : %s\nجنسیت : %s",responseModel.getKankorId(),responseModel.getName(),responseModel.getFatherName(),responseModel.getGrandFatherName(),responseModel.getSchool(),responseModel.getPoint(),responseModel.getResult(),responseModel.getCity(),responseModel.getSex());
+            }else {
+                return "مشخصات وارد شده در دیتابیس وجود ندارد!\nو یا هنوز فایل اکسل ولایت تان منتشر نشده است!";
+            }
+    }
+
 
     String getResultForId(String name,String fatherName,String grandFatherName){
         Document doc;
