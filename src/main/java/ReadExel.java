@@ -38,20 +38,6 @@ public class ReadExel {
                     resultsModel.setProvince(dataFormatter.formatCellValue(row.getCell(6)));
                     resultsModel.setSex(dataFormatter.formatCellValue(row.getCell(4)));
                     KankorDB.addResults(resultsModel);
-
-
-//                    for (Cell cell : row) {
-//                        String cellValue = dataFormatter.formatCellValue(cell);
-//
-//                        //if(cell.getCellType() == CellType.STRING) {
-//                        //
-//                        //}
-////                        if (cell.getRow().getCell(1).toString().equals("روزینا") && cell.getRow().getCell(2).toString().equals("محمدیاسین")) {
-////                            System.out.println(cellValue);
-////                        }
-////                        System.out.print();
-//                    }
-//                    System.out.println();
                 }
             }
             workbook.close();
